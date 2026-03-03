@@ -1,0 +1,25 @@
+export function getTheme(dark) {
+  return {
+    pageBg:        dark ? "linear-gradient(135deg, #0f0e17 0%, #1b1530 100%)" : "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%)",
+    cardBg:        dark ? "#1e1a2e" : "#fff",
+    panelBg:       dark ? "#1a1728" : "#fff",
+    inputBg:       dark ? "#2a2640" : "#f1f5f9",
+    inputColor:    dark ? "#94a3b8" : "#64748b",
+    trackBg:       dark ? "#2d2945" : "#e2e8f0",
+    handleBg:      dark ? "#3d3a5c" : "#e2e8f0",
+    navBtnBg:      dark ? "#2d2945" : "#e0e7ff",
+    navBtnColor:   dark ? "#a5b4fc" : "#4338ca",
+    btnShadow:     dark ? "0 2px 8px rgba(0,0,0,0.5)"             : "0 2px 8px rgba(0,0,0,0.08)",
+    cardShadow:    dark ? "0 8px 32px rgba(0,0,0,0.4)"            : "0 8px 32px rgba(99,102,241,0.10)",
+    listShadow:    dark ? "0 2px 8px rgba(0,0,0,0.3)"             : "0 2px 8px rgba(0,0,0,0.05)",
+    playShadowOn:  dark ? "#ef444488" : "#ef444455",
+    backdrop:      dark ? "rgba(0,0,0,0.65)"                       : "rgba(0,0,0,0.35)",
+    textPrimary:   dark ? "#e2e8f0"  : "#1e1b4b",
+    textSecondary: dark ? "#94a3b8"  : "#6b7280",
+    textMuted:     dark ? "#6b7280"  : "#9ca3af",
+    settingsLabel: dark ? "#d1d5db"  : "#374151",
+    footerText:    dark ? "#3d3a5c"  : "#d1d5db",
+    divider:       dark ? "#2d2945"  : "#f1f5f9",
+    catBg: (cat) => dark ? cat.color + "28" : cat.bg,
+  };
+}
