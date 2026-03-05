@@ -1,6 +1,6 @@
 # LangLoop 🎧
 
-A Vietnamese vocabulary learning app built on spaced audio repetition. Pick a category, listen to each phrase spoken in English then repeated in Vietnamese, and build listening fluency hands-free.
+A Vietnamese vocabulary learning app built on spaced audio repetition. Pick a category or pack, listen to each phrase spoken in English then repeated in Vietnamese, and build listening fluency hands-free.
 
 ## Getting started
 
@@ -13,15 +13,18 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## Features
 
-- **12 categories** — Greetings, Numbers, Food, Travel, Shopping, Time, Family, Weather, Colours, Animals, Directions, Health
-- **Audio repetition** — Each card reads the English phrase once, then repeats the Vietnamese translation N times
-- **Auto-advance** — Flows through the whole deck automatically; great for background listening
-- **Shuffle mode** — Randomise card order each session
+- **7,771 vocabulary words** across 21 themed categories, split into packs of 20
+- **12 curated starter categories** — Greetings, Numbers, Food, Travel, Shopping, Time, Family, Weather, Colours, Animals, Directions, Health
+- **Vocabulary Bank** — full categorised library with horizontal scrollable pack rows per category
+- **Chirp3-HD** - every word and phrase uses Google TTS for slightly more natural sounding pronunciations
+- **Glossary** — searchable A–Z of all terms, sortable by Vietnamese or English, with pack source labels
+- **Audio repetition** — each card reads the English phrase once, then repeats the Vietnamese N times
+- **Auto-advance** — flows through the whole deck hands-free; great for background listening
+- **Shuffle mode** — randomise card order each session
 - **Per-card navigation** — ‹ / › buttons to skip forward and back manually
-- **Dark / light mode** — Defaults to dark
-- **Preview screen** — Browse all cards in a deck before starting
-- **Translation reveal** — Tap the card image to show/hide the English translation during study
-- **Persistent settings** — ⚙️ button available on every non-study screen
+- **Translation reveal** — tap the study card to show/hide the English translation
+- **Dark / light mode** — toggle in the header
+- **Preview screen** — browse all cards in a deck before starting
 
 ## Settings (⚙️)
 
@@ -38,18 +41,24 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser.
 ```
 src/
   data/
-    categories.js       — All 12 category definitions + vocab
+    categories.js         — 12 curated category definitions + vocab
+    categorizedSets.js    — Auto-generated: 21 categories × ~398 packs from CSV
   lib/
-    theme.js            — Light/dark design tokens
+    findDeck.js           — Looks up any deck by ID across both data sources
+    theme.js              — Light/dark design tokens
+    audioHelper.js        — djb2 hash, MP3 URL builder, Web Speech fallback
   components/
-    CardImage.jsx       — Letter-based card thumbnail
-    ProgressRing.jsx    — SVG rep progress ring
+    ProgressRing.jsx      — SVG rep progress ring
   screens/
-    HomeScreen.jsx      — Category grid
-    PreviewScreen.jsx   — Deck card list + Start button
-    StudyScreen.jsx     — Full study mode with TTS
-  App.jsx               — Root: routing, settings state, floating buttons
-  main.jsx              — React entry point
+    HomeScreen.jsx        — Curated categories + Vocabulary Bank
+    PreviewScreen.jsx     — Deck card list + Start button
+    StudyScreen.jsx       — Full study mode with TTS
+    GlossaryScreen.jsx    — Searchable A–Z glossary with sort toggle
+  App.jsx                 — Root: routing, settings state
+  main.jsx                — React entry point
+
+scripts/
+  generate-audio.cjs      — Pre-generates all MP3s via Google Cloud TTS
 ```
 
 ## Building for production
