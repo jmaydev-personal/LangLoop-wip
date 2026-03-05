@@ -17,6 +17,16 @@ function getAllVocab() {
   return all;
 }
 
+// Strip diacritics for fuzzy search — "anh" matches "ảnh", "ánh", etc.
+// đ/Đ is mapped to d so searching "d" also surfaces đ words.
+function stripDiacritics(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .toLowerCase();
+}
+
 // Normalize a Vietnamese character to its A-Z base for grouping.
 // đ/Đ is kept as its own letter; everything else strips combining marks.
 function groupLetter(str) {
@@ -39,10 +49,13 @@ export default function GlossaryScreen({ dark, onBack }) {
   // Build sorted + grouped data
   const { grouped, letters } = useMemo(() => {
     const all = getAllVocab();
-    const q   = query.trim().toLowerCase();
+    const q     = query.trim().toLowerCase();
+    const qNorm = stripDiacritics(q);
 
     const filtered = q
       ? all.filter(v =>
+          stripDiacritics(v.target).includes(qNorm) ||
+          stripDiacritics(v.native).includes(qNorm) ||
           v.target.toLowerCase().includes(q) ||
           v.native.toLowerCase().includes(q)
         )
