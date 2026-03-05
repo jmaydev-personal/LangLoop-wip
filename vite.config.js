@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 // If deploying to a custom domain or username.github.io root repo, use '/'
 export default defineConfig({
   plugins: [react()],
-  base: '/langloop-wip/',
+  base: '/LangLoop-wip/',
 })
