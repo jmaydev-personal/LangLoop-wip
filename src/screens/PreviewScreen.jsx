@@ -1,9 +1,9 @@
-import { CATEGORIES } from "../data/categories";
+import { findDeck } from "../lib/findDeck";
 import { getTheme } from "../lib/theme";
 import CardImage from "../components/CardImage";
 
 export default function PreviewScreen({ categoryId, dark, onBack, onStart }) {
-  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  const cat = findDeck(categoryId);
   const t = getTheme(dark);
 
   return (

@@ -3,11 +3,12 @@ import { getTheme } from "./lib/theme";
 import HomeScreen from "./screens/HomeScreen";
 import PreviewScreen from "./screens/PreviewScreen";
 import StudyScreen from "./screens/StudyScreen";
+import GlossaryScreen from "./screens/GlossaryScreen";
 
 export default function App() {
   // Global state
   const [dark, setDark] = useState(true);
-  const [screen, setScreen] = useState("home"); // "home" | "preview" | "study"
+  const [screen, setScreen] = useState("home"); // "home" | "preview" | "study" | "glossary"
   const [categoryId, setCategoryId] = useState(null);
 
   // Settings
@@ -20,7 +21,7 @@ export default function App() {
 
   const t = getTheme(dark);
 
-  const handleSelect = (id) => {
+  const handleSelect = (id, _type) => {
     setCategoryId(id);
     setScreen("preview");
   };
@@ -46,7 +47,10 @@ export default function App() {
     <div style={{ position: "relative" }}>
       {/* Screens */}
       {screen === "home" && (
-        <HomeScreen dark={dark} onSelect={handleSelect} />
+        <HomeScreen dark={dark} onSelect={handleSelect} onGlossary={() => setScreen("glossary")} />
+      )}
+      {screen === "glossary" && (
+        <GlossaryScreen dark={dark} onBack={() => setScreen("home")} />
       )}
       {screen === "preview" && (
         <PreviewScreen
@@ -69,8 +73,8 @@ export default function App() {
         />
       )}
 
-      {/* Floating buttons — hidden on study screen */}
-      {screen !== "study" && (
+      {/* Floating buttons — hidden on study and glossary screens */}
+      {screen !== "study" && screen !== "glossary" && (
         <div style={{ position: "fixed", bottom: 24, right: 20, display: "flex", flexDirection: "column", gap: 10, zIndex: 100 }}>
           <button
             onClick={() => setShowSettings(true)}

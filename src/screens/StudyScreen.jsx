@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { CATEGORIES } from "../data/categories";
+import { findDeck } from "../lib/findDeck";
 import { getTheme } from "../lib/theme";
+import { playAudio } from "../lib/audioHelper";
 import CardImage from "../components/CardImage";
 import ProgressRing from "../components/ProgressRing";
 
@@ -8,22 +9,23 @@ export default function StudyScreen({
   categoryId, dark, onBack,
   repeatCount, speed, pauseMs, advancePauseMs, shuffle,
 }) {
-  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  const cat   = findDeck(categoryId);
   const vocab = cat.vocab;
 
-  const [cardIndex, setCardIndex] = useState(0);
-  const [currentRep, setCurrentRep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [cardIndex, setCardIndex]         = useState(0);
+  const [currentRep, setCurrentRep]       = useState(0);
+  const [isPlaying, setIsPlaying]         = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
-  const [voiceReady, setVoiceReady] = useState(false);
 
-  const stopRef = useRef(false);
-  const timeoutRef = useRef(null);
-  const repeatCountRef = useRef(repeatCount);
-  const speedRef = useRef(speed);
-  const pauseMsRef = useRef(pauseMs);
-  const advancePauseMsRef = useRef(advancePauseMs);
-  const shuffleRef = useRef(shuffle);
+  // Refs for async loop
+  const stopRef            = useRef(false);
+  const timeoutRef         = useRef(null);
+  const activeAudioRef     = useRef(null); // current HTMLAudioElement
+  const repeatCountRef     = useRef(repeatCount);
+  const speedRef           = useRef(speed);
+  const pauseMsRef         = useRef(pauseMs);
+  const advancePauseMsRef  = useRef(advancePauseMs);
+  const shuffleRef         = useRef(shuffle);
 
   useEffect(() => { repeatCountRef.current = repeatCount; }, [repeatCount]);
   useEffect(() => { speedRef.current = speed; }, [speed]);
@@ -32,48 +34,39 @@ export default function StudyScreen({
   useEffect(() => { shuffleRef.current = shuffle; }, [shuffle]);
 
   const card = vocab[cardIndex];
-  const t = getTheme(dark);
-
-  useEffect(() => {
-    const checkVoices = () => {
-      if (window.speechSynthesis.getVoices().length > 0) setVoiceReady(true);
-    };
-    checkVoices();
-    window.speechSynthesis.onvoiceschanged = checkVoices;
-    return () => { window.speechSynthesis.onvoiceschanged = null; };
-  }, []);
+  const t    = getTheme(dark);
 
   const sleep = (ms) =>
     new Promise((res) => { timeoutRef.current = setTimeout(res, ms); });
 
   const stopPlayback = useCallback(() => {
     stopRef.current = true;
+    // Stop any playing HTML5 audio
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
     window.speechSynthesis.cancel();
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsPlaying(false);
     setCurrentRep(0);
   }, []);
 
+  // Wraps playAudio so we can cancel mid-playback via stopRef
   const speakOnce = useCallback((text, lang, rate) => {
-    return new Promise((resolve) => {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = lang;
-      u.rate = rate;
-      u.onend = resolve;
-      u.onerror = resolve;
-      window.speechSynthesis.speak(u);
-    });
+    if (stopRef.current) return Promise.resolve();
+    return playAudio(text, lang, rate);
   }, []);
 
   const playCardReps = useCallback(async (text) => {
     const times = repeatCountRef.current;
-    const rate = speedRef.current;
+    const rate  = speedRef.current;
     const pause = pauseMsRef.current;
     setCurrentRep(0);
     for (let i = 1; i <= times; i++) {
       if (stopRef.current) return false;
       setCurrentRep(i);
-      await speakOnce(text, "vi-VN", rate);
+      await speakOnce(text, "vi", rate);
       if (stopRef.current) return false;
       if (i < times) await sleep(pause);
     }
@@ -100,11 +93,13 @@ export default function StudyScreen({
       setCardIndex(idx);
       setCurrentRep(0);
       setShowTranslation(false);
-      await speakOnce(vocab[idx].native, "en-US", speedRef.current);
+      // Speak English once
+      await speakOnce(vocab[idx].native, "en", speedRef.current);
       if (stopRef.current) break;
       await sleep(300);
       if (stopRef.current) break;
       setShowTranslation(true);
+      // Repeat Vietnamese N times
       const completed = await playCardReps(vocab[idx].target);
       if (!completed) break;
       await sleep(advancePauseMsRef.current);
@@ -211,8 +206,8 @@ export default function StudyScreen({
             onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
             onMouseLeave={e => e.currentTarget.style.transform = ""}
           >‹</button>
-          <button onClick={handlePlay} disabled={!voiceReady}
-            style={{ width: 80, height: 80, borderRadius: "50%", border: "none", background: isPlaying ? "#ef4444" : cat.color, color: "#fff", fontSize: 32, cursor: voiceReady ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 8px 24px ${isPlaying ? t.playShadowOn : cat.color + "66"}`, transition: "all 0.2s", opacity: voiceReady ? 1 : 0.6 }}
+          <button onClick={handlePlay}
+            style={{ width: 80, height: 80, borderRadius: "50%", border: "none", background: isPlaying ? "#ef4444" : cat.color, color: "#fff", fontSize: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 8px 24px ${isPlaying ? t.playShadowOn : cat.color + "66"}`, transition: "all 0.2s" }}
           >{isPlaying ? "■" : "▶"}</button>
           <button onClick={() => handleNav(1)}
             style={{ width: 52, height: 52, borderRadius: "50%", border: "none", background: t.navBtnBg, color: t.navBtnColor, fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: t.btnShadow, transition: "all 0.15s" }}
@@ -220,8 +215,6 @@ export default function StudyScreen({
             onMouseLeave={e => e.currentTarget.style.transform = ""}
           >›</button>
         </div>
-
-        {!voiceReady && <p style={{ textAlign: "center", fontSize: 12, color: t.textMuted }}>Loading voices…</p>}
       </div>
 
       <style>{`
