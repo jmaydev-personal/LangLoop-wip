@@ -71,7 +71,7 @@ function HorizontalPackRow({ cat, onSelect, t }) {
   );
 }
 
-export default function HomeScreen({ dark, onSelect, onGlossary }) {
+export default function HomeScreen({ dark, onSelect, onGlossary, onSettings, onToggleDark }) {
   const t = getTheme(dark);
   const sorted = sortedCategories();
   const totalWords = CATEGORIZED_SETS.reduce((s, c) => s + c.packs.reduce((ss, p) => ss + p.vocab.length, 0), 0);
@@ -87,15 +87,31 @@ export default function HomeScreen({ dark, onSelect, onGlossary }) {
               <span style={{ fontSize: 30 }}>🎧</span>
               <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: t.textPrimary }}>LangLoop</h1>
             </div>
-            <button
-              onClick={onGlossary}
-              title="Glossary"
-              style={{ background: t.cardBg, border: "none", borderRadius: 12, padding: "8px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, boxShadow: t.btnShadow, color: t.textPrimary, fontSize: 13, fontWeight: 700, transition: "all 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
-              onMouseLeave={e => e.currentTarget.style.transform = ""}
-            >
-              <span style={{ fontSize: 16 }}>📖</span> Glossary
-            </button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button
+                onClick={onSettings}
+                title="Settings"
+                style={{ width: 38, height: 38, borderRadius: 10, border: "none", background: t.cardBg, boxShadow: t.btnShadow, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
+                onMouseLeave={e => e.currentTarget.style.transform = ""}
+              >⚙️</button>
+              <button
+                onClick={onToggleDark}
+                title="Toggle theme"
+                style={{ width: 38, height: 38, borderRadius: 10, border: "none", background: t.cardBg, boxShadow: t.btnShadow, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
+                onMouseLeave={e => e.currentTarget.style.transform = ""}
+              >{dark ? "☀️" : "🌙"}</button>
+              <button
+                onClick={onGlossary}
+                title="Glossary"
+                style={{ height: 38, borderRadius: 10, border: "none", background: t.cardBg, boxShadow: t.btnShadow, padding: "0 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, color: t.textPrimary, fontSize: 13, fontWeight: 700, transition: "all 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+                onMouseLeave={e => e.currentTarget.style.transform = ""}
+              >
+                <span style={{ fontSize: 15 }}>📖</span> Glossary
+              </button>
+            </div>
           </div>
           <p style={{ margin: 0, fontSize: 14, color: t.textSecondary }}>
             Vietnamese · {totalWords.toLocaleString()} words across {CATEGORIZED_SETS.length} categories
@@ -116,24 +132,31 @@ export default function HomeScreen({ dark, onSelect, onGlossary }) {
                 key={cat.id}
                 onClick={() => onSelect(cat.id, "category")}
                 style={{
-                  background: t.cardBg,
-                  border: `2px solid ${t.catBg(cat)}`,
-                  borderRadius: 16,
-                  padding: "14px 12px",
+                  background: `linear-gradient(145deg, ${cat.color}ee, ${cat.color}99)`,
+                  border: "none",
+                  borderRadius: 18,
+                  padding: 0,
                   cursor: "pointer",
                   textAlign: "left",
-                  boxShadow: t.listShadow,
-                  transition: "all 0.15s",
+                  boxShadow: `0 4px 16px ${cat.color}44`,
+                  transition: "all 0.18s",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 6,
+                  overflow: "hidden",
+                  position: "relative",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 5px 18px ${cat.color}40`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = t.listShadow; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.02)"; e.currentTarget.style.boxShadow = `0 8px 24px ${cat.color}66`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = `0 4px 16px ${cat.color}44`; }}
               >
-                <div style={{ fontSize: 24 }}>{cat.emoji}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: t.textPrimary, lineHeight: 1.2 }}>{cat.label}</div>
-                <div style={{ fontSize: 11, color: t.textMuted }}>{cat.vocab.length} phrases</div>
+                {/* Big emoji art area */}
+                <div style={{ padding: "18px 12px 8px", display: "flex", justifyContent: "center" }}>
+                  <span style={{ fontSize: 40, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.18))" }}>{cat.emoji}</span>
+                </div>
+                {/* Label strip */}
+                <div style={{ padding: "6px 10px 12px", background: "rgba(0,0,0,0.18)", backdropFilter: "blur(4px)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: 2 }}>{cat.label}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.75)" }}>{cat.vocab.length} phrases</div>
+                </div>
               </button>
             ))}
           </div>
@@ -154,8 +177,10 @@ export default function HomeScreen({ dark, onSelect, onGlossary }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                 <span style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  width: 30, height: 30, borderRadius: 8,
-                  background: cat.color + "22", fontSize: 16,
+                  width: 32, height: 32, borderRadius: 9,
+                  background: `linear-gradient(135deg, ${cat.color}dd, ${cat.color}88)`,
+                  fontSize: 17,
+                  boxShadow: `0 2px 8px ${cat.color}44`,
                 }}>{cat.emoji}</span>
                 <div>
                   <span style={{ fontSize: 15, fontWeight: 800, color: t.textPrimary }}>{cat.label}</span>

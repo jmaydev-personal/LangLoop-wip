@@ -47,7 +47,13 @@ export default function App() {
     <div style={{ position: "relative" }}>
       {/* Screens */}
       {screen === "home" && (
-        <HomeScreen dark={dark} onSelect={handleSelect} onGlossary={() => setScreen("glossary")} />
+        <HomeScreen
+          dark={dark}
+          onSelect={handleSelect}
+          onGlossary={() => setScreen("glossary")}
+          onSettings={() => setShowSettings(true)}
+          onToggleDark={() => setDark(d => !d)}
+        />
       )}
       {screen === "glossary" && (
         <GlossaryScreen dark={dark} onBack={() => setScreen("home")} />
@@ -73,8 +79,8 @@ export default function App() {
         />
       )}
 
-      {/* Floating buttons — hidden on study and glossary screens */}
-      {screen !== "study" && screen !== "glossary" && (
+      {/* Floating buttons — preview screen only */}
+      {screen === "preview" && (
         <div style={{ position: "fixed", bottom: 24, right: 20, display: "flex", flexDirection: "column", gap: 10, zIndex: 100 }}>
           <button
             onClick={() => setShowSettings(true)}
