@@ -102,7 +102,7 @@ export default function GlossaryScreen({ dark, onBack }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, fontFamily: "'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: t.pageBg,  }}>
 
       {/* Sticky header */}
       <div style={{

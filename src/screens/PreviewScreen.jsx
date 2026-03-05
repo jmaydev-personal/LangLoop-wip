@@ -1,13 +1,12 @@
 import { findDeck } from "../lib/findDeck";
 import { getTheme } from "../lib/theme";
-import CardImage from "../components/CardImage";
 
 export default function PreviewScreen({ categoryId, dark, onBack, onStart }) {
   const cat = findDeck(categoryId);
   const t = getTheme(dark);
 
   return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, fontFamily: "'Segoe UI', sans-serif", padding: "24px 16px 100px" }}>
+    <div style={{ minHeight: "100vh", background: t.pageBg, padding: "24px 16px 140px" }}>
       <div style={{ maxWidth: 520, margin: "0 auto" }}>
 
         {/* Header */}
@@ -41,10 +40,9 @@ export default function PreviewScreen({ categoryId, dark, onBack, onStart }) {
                 border: `1.5px solid ${t.catBg(cat)}`,
               }}
             >
-              <div style={{ fontSize: 12, fontWeight: 700, color: cat.color, width: 20, textAlign: "center", flexShrink: 0, opacity: 0.7 }}>
-                {i + 1}
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: cat.color + "22", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: cat.color }}>{i + 1}</span>
               </div>
-              <CardImage native={item.native} color={cat.color} size={48} fontSize={18} borderRadius={12} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: t.textPrimary, marginBottom: 2 }}>{item.target}</div>
                 <div style={{ fontSize: 13, color: t.textSecondary }}>{item.native}</div>

@@ -77,7 +77,7 @@ export default function HomeScreen({ dark, onSelect, onGlossary, onSettings, onT
   const totalWords = CATEGORIZED_SETS.reduce((s, c) => s + c.packs.reduce((ss, p) => ss + p.vocab.length, 0), 0);
 
   return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, fontFamily: "'Segoe UI', sans-serif", padding: "28px 16px 80px" }}>
+    <div style={{ minHeight: "100vh", background: t.pageBg, padding: "28px 16px 80px" }}>
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
 
         {/* App header */}

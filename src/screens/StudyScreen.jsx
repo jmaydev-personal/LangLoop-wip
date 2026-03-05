@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { findDeck } from "../lib/findDeck";
 import { getTheme } from "../lib/theme";
 import { playAudio } from "../lib/audioHelper";
-import CardImage from "../components/CardImage";
 import ProgressRing from "../components/ProgressRing";
 
 export default function StudyScreen({
@@ -12,20 +11,19 @@ export default function StudyScreen({
   const cat   = findDeck(categoryId);
   const vocab = cat.vocab;
 
-  const [cardIndex, setCardIndex]         = useState(0);
-  const [currentRep, setCurrentRep]       = useState(0);
-  const [isPlaying, setIsPlaying]         = useState(false);
+  const [cardIndex, setCardIndex]             = useState(0);
+  const [currentRep, setCurrentRep]           = useState(0);
+  const [isPlaying, setIsPlaying]             = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
 
-  // Refs for async loop
-  const stopRef            = useRef(false);
-  const timeoutRef         = useRef(null);
-  const activeAudioRef     = useRef(null); // current HTMLAudioElement
-  const repeatCountRef     = useRef(repeatCount);
-  const speedRef           = useRef(speed);
-  const pauseMsRef         = useRef(pauseMs);
-  const advancePauseMsRef  = useRef(advancePauseMs);
-  const shuffleRef         = useRef(shuffle);
+  const stopRef           = useRef(false);
+  const timeoutRef        = useRef(null);
+  const activeAudioRef    = useRef(null);
+  const repeatCountRef    = useRef(repeatCount);
+  const speedRef          = useRef(speed);
+  const pauseMsRef        = useRef(pauseMs);
+  const advancePauseMsRef = useRef(advancePauseMs);
+  const shuffleRef        = useRef(shuffle);
 
   useEffect(() => { repeatCountRef.current = repeatCount; }, [repeatCount]);
   useEffect(() => { speedRef.current = speed; }, [speed]);
@@ -41,7 +39,6 @@ export default function StudyScreen({
 
   const stopPlayback = useCallback(() => {
     stopRef.current = true;
-    // Stop any playing HTML5 audio
     if (activeAudioRef.current) {
       activeAudioRef.current.pause();
       activeAudioRef.current = null;
@@ -52,7 +49,6 @@ export default function StudyScreen({
     setCurrentRep(0);
   }, []);
 
-  // Wraps playAudio so we can cancel mid-playback via stopRef
   const speakOnce = useCallback((text, lang, rate) => {
     if (stopRef.current) return Promise.resolve();
     return playAudio(text, lang, rate);
@@ -93,13 +89,11 @@ export default function StudyScreen({
       setCardIndex(idx);
       setCurrentRep(0);
       setShowTranslation(false);
-      // Speak English once
       await speakOnce(vocab[idx].native, "en", speedRef.current);
       if (stopRef.current) break;
       await sleep(300);
       if (stopRef.current) break;
       setShowTranslation(true);
-      // Repeat Vietnamese N times
       const completed = await playCardReps(vocab[idx].target);
       if (!completed) break;
       await sleep(advancePauseMsRef.current);
@@ -125,50 +119,89 @@ export default function StudyScreen({
     });
   };
 
-  const deckProgress = (cardIndex / vocab.length) * 100;
+  const deckProgress = ((cardIndex + 1) / vocab.length) * 100;
 
   return (
-    <div style={{ minHeight: "100vh", background: t.pageBg, fontFamily: "'Segoe UI', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 16px", position: "relative" }}>
+    <div style={{ minHeight: "100vh", background: t.pageBg, display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 16px", position: "relative" }}>
       <div style={{ width: "100%", maxWidth: 520 }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 20 }}>
-          <button onClick={() => { stopPlayback(); onBack(); }} style={{ background: t.cardBg, border: "none", borderRadius: 12, width: 40, height: 40, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: t.btnShadow, color: t.textPrimary, flexShrink: 0 }}>←</button>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
+          <button
+            onClick={() => { stopPlayback(); onBack(); }}
+            style={{ background: t.cardBg, border: "none", borderRadius: 12, width: 40, height: 40, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: t.btnShadow, color: t.textPrimary, flexShrink: 0 }}
+          >←</button>
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: t.textSecondary }}>
+              {cat.emoji} {cat.label}
+            </span>
+          </div>
+          <div style={{ width: 40 }} />
         </div>
 
-        {/* Main card */}
-        <div style={{ background: t.cardBg, borderRadius: 24, boxShadow: t.cardShadow, padding: "32px 28px 28px", marginBottom: 16, border: `2px solid ${isPlaying ? cat.color : "transparent"}`, transition: "border-color 0.3s" }}>
-          {/* Image — click to reveal translation */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-            <div
-              onClick={() => setShowTranslation(v => !v)}
-              style={{ cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s", borderRadius: 28, boxShadow: showTranslation ? `0 0 0 3px ${cat.color}` : "none" }}
-              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
-              onMouseLeave={e => e.currentTarget.style.transform = ""}
-            >
-              <CardImage native={card.native} color={cat.color} size={110} fontSize={42} borderRadius={28} />
+        {/* Main card — tap to reveal */}
+        <div
+          onClick={() => setShowTranslation(v => !v)}
+          style={{
+            background: t.cardBg,
+            borderRadius: 28,
+            boxShadow: t.cardShadow,
+            marginBottom: 20,
+            overflow: "hidden",
+            cursor: "pointer",
+            border: `2px solid ${isPlaying ? cat.color + "88" : "transparent"}`,
+            transition: "border-color 0.3s, box-shadow 0.2s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = `${t.cardShadow}, 0 0 0 3px ${cat.color}22`; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = t.cardShadow; }}
+        >
+          {/* Colour accent strip */}
+          <div style={{ height: 6, background: `linear-gradient(90deg, ${cat.color}, ${cat.color}88)` }} />
+
+          <div style={{ padding: "36px 32px 32px" }}>
+            {/* Vietnamese word */}
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <div style={{
+                fontSize: card.target.length > 20 ? 28 : card.target.length > 12 ? 34 : 40,
+                fontWeight: 800,
+                color: t.textPrimary,
+                lineHeight: 1.25,
+                letterSpacing: "-0.5px",
+              }}>
+                {card.target}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: t.textMuted + "22", marginBottom: 24 }} />
+
+            {/* English translation — revealed on tap */}
+            <div style={{ textAlign: "center", minHeight: 48, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              {showTranslation ? (
+                <div style={{ animation: "slideUp 0.22s ease" }}>
+                  <div style={{ fontSize: 22, fontWeight: 600, color: cat.color }}>
+                    {card.native}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 32, height: 2, borderRadius: 1, background: t.textMuted + "44" }} />
+                  <span style={{ fontSize: 13, color: t.textMuted, fontStyle: "italic", letterSpacing: "0.3px" }}>
+                    tap to reveal
+                  </span>
+                  <div style={{ width: 32, height: 2, borderRadius: 1, background: t.textMuted + "44" }} />
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Vietnamese */}
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{ fontSize: 36, fontWeight: 700, color: t.textPrimary, lineHeight: 1.3 }}>{card.target}</div>
-          </div>
-
-          {/* Translation */}
-          <div style={{ textAlign: "center", minHeight: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {showTranslation ? (
-              <div style={{ fontSize: 19, color: t.settingsLabel, fontWeight: 600, animation: "fadeIn 0.3s ease" }}>"{card.native}"</div>
-            ) : (
-              <div style={{ fontSize: 13, color: t.textMuted, fontStyle: "italic" }}>tap image to reveal</div>
-            )}
-          </div>
         </div>
 
-        {/* Progress bar + card counter */}
-        <div style={{ marginBottom: 16, marginTop: 4 }}>
+        {/* Progress bar + counter */}
+        <div style={{ marginBottom: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 13, color: t.textSecondary, fontWeight: 500 }}>Card {cardIndex + 1} of {vocab.length}</span>
+            <span style={{ fontSize: 13, color: t.textSecondary, fontWeight: 500 }}>
+              {cardIndex + 1} / {vocab.length}
+            </span>
             {isPlaying && currentRep > 0 && (
               <div style={{ display: "flex", alignItems: "center", gap: 6, background: cat.color + "22", borderRadius: 20, padding: "4px 12px" }}>
                 <div style={{ width: 7, height: 7, borderRadius: "50%", background: cat.color, animation: "pulse 1s infinite" }} />
@@ -200,26 +233,30 @@ export default function StudyScreen({
         </div>
 
         {/* Play / nav buttons */}
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, marginBottom: 16 }}>
-          <button onClick={() => handleNav(-1)}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20 }}>
+          <button
+            onClick={() => handleNav(-1)}
             style={{ width: 52, height: 52, borderRadius: "50%", border: "none", background: t.navBtnBg, color: t.navBtnColor, fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: t.btnShadow, transition: "all 0.15s" }}
             onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
             onMouseLeave={e => e.currentTarget.style.transform = ""}
           >‹</button>
-          <button onClick={handlePlay}
+          <button
+            onClick={handlePlay}
             style={{ width: 80, height: 80, borderRadius: "50%", border: "none", background: isPlaying ? "#ef4444" : cat.color, color: "#fff", fontSize: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 8px 24px ${isPlaying ? t.playShadowOn : cat.color + "66"}`, transition: "all 0.2s" }}
           >{isPlaying ? "■" : "▶"}</button>
-          <button onClick={() => handleNav(1)}
+          <button
+            onClick={() => handleNav(1)}
             style={{ width: 52, height: 52, borderRadius: "50%", border: "none", background: t.navBtnBg, color: t.navBtnColor, fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: t.btnShadow, transition: "all 0.15s" }}
             onMouseEnter={e => e.currentTarget.style.transform = "scale(1.08)"}
             onMouseLeave={e => e.currentTarget.style.transform = ""}
           >›</button>
         </div>
+
       </div>
 
       <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
     </div>
   );
