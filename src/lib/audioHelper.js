@@ -18,7 +18,7 @@ function djb2(str) {
  * lang: "vi" | "en"
  */
 export function audioURL(text, lang) {
-  return `/audio/${lang}/${djb2(text)}.mp3`;
+  return `${import.meta.env.BASE_URL}audio/${lang}/${djb2(text)}.mp3`;
 }
 
 /**
