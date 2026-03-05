@@ -73,7 +73,7 @@ export default function GlossaryScreen({ dark, onBack }) {
         groups[letter].push(item);
       }
       // Sort letter keys in Vietnamese alphabet order
-      const VI_ORDER = "ABCĐEGHIKLMNOOPQRSTUVXY#".split("");
+      const VI_ORDER = "ABCDĐEFGHIKLMNOPQRSTUVWXY#".split("");
       const letters  = Object.keys(groups).sort((a, b) => {
         const ia = VI_ORDER.indexOf(a);
         const ib = VI_ORDER.indexOf(b);
