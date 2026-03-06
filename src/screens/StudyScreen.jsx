@@ -18,7 +18,7 @@ export default function StudyScreen({
 
   const stopRef           = useRef(false);
   const timeoutRef        = useRef(null);
-  const activeAudioRef    = useRef(null);
+  const abortCtrlRef      = useRef(null);   // AbortController for current clip
   const repeatCountRef    = useRef(repeatCount);
   const speedRef          = useRef(speed);
   const pauseMsRef        = useRef(pauseMs);
@@ -39,11 +39,11 @@ export default function StudyScreen({
 
   const stopPlayback = useCallback(() => {
     stopRef.current = true;
-    if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
-      activeAudioRef.current = null;
+    // Abort the currently-playing clip immediately
+    if (abortCtrlRef.current) {
+      abortCtrlRef.current.abort();
+      abortCtrlRef.current = null;
     }
-    window.speechSynthesis.cancel();
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsPlaying(false);
     setCurrentRep(0);
@@ -51,7 +51,12 @@ export default function StudyScreen({
 
   const speakOnce = useCallback((text, lang, rate) => {
     if (stopRef.current) return Promise.resolve();
-    return playAudio(text, lang, rate);
+    // Create a fresh AbortController for this clip
+    const ctrl = new AbortController();
+    abortCtrlRef.current = ctrl;
+    return playAudio(text, lang, rate, ctrl.signal).then(() => {
+      if (abortCtrlRef.current === ctrl) abortCtrlRef.current = null;
+    });
   }, []);
 
   const playCardReps = useCallback(async (text) => {
